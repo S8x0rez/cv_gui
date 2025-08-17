@@ -5,26 +5,26 @@
 
 #include "main_frame.hpp"
 
-CV_GUI::CV_GUI(GtkApplication *app)
+CV_GUI::CV_GUI(GtkApplication* app)
 {
     file = nullptr;
 
     // ウィンドウを作成
-    GtkWidget *window = gtk_window_new();
+    GtkWidget* window = gtk_window_new();
     gtk_widget_set_size_request(window, 640, 480);
     gtk_window_set_application(GTK_WINDOW(window), app);
 
-    GtkWidget *vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget* vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_window_set_child(GTK_WINDOW(window), vbox1);
 
-    GtkWidget *select_button = gtk_button_new_with_label("select Image file");
+    GtkWidget* select_button = gtk_button_new_with_label("select Image file");
     gtk_box_append(GTK_BOX(vbox1), select_button);
 
-    GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_size_request(hbox, 400, 400);
     gtk_box_append(GTK_BOX(vbox1), hbox);
 
-    image = (GtkPicture *)(gtk_picture_new());
+    image = (GtkPictures*)(gtk_picture_new());
 
     // ウィンドウに画像をセット
     gtk_box_append(GTK_BOX(hbox), GTK_WIDGET(image));
@@ -33,11 +33,11 @@ CV_GUI::CV_GUI(GtkApplication *app)
     
     g_signal_connect_swapped(select_button, "clicked", G_CALLBACK(&ImageSelect), this);
 
-    GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget* vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_size_request(vbox2, 100, 200);
     gtk_box_append(GTK_BOX(hbox), vbox2);
 
-    const char *process_list[] = {"0:Gray Scale",
+    const char* process_list[] = {"0:Gray Scale",
                                   "1:Value Scaling", 
                                   "2:Gamma Correction", 
                                   "3:S Tone Curve", 
@@ -57,22 +57,22 @@ CV_GUI::CV_GUI(GtkApplication *app)
                                   "17:Gaussian Filter", 
                                   "18:Motion Blur", 
                                   NULL};
-    ddown_process = (GtkDropDown *)(gtk_drop_down_new_from_strings(process_list));
+    ddown_process = (GtkDropDown*)(gtk_drop_down_new_from_strings(process_list));
     gtk_box_append(GTK_BOX(vbox2), GTK_WIDGET(ddown_process));
 
-    lbl_argv = (GtkLabel *)(gtk_label_new("Usage:    // Gray scale"));
+    lbl_argv = (GtkLabel*)(gtk_label_new("Usage:    // Gray scale"));
     g_signal_connect(ddown_process, "notify::selected-item", G_CALLBACK(&ProcessChange), this);
     gtk_box_append(GTK_BOX(vbox2), GTK_WIDGET(lbl_argv));
 
-    txt_argv = (GtkEntry *)(gtk_entry_new());
+    txt_argv = (GtkEntry*)(gtk_entry_new());
     gtk_box_append(GTK_BOX(vbox2), GTK_WIDGET(txt_argv));
 
-    GtkWidget *exe_button = gtk_button_new_with_label("execute");
+    GtkWidget* exe_button = gtk_button_new_with_label("execute");
     gtk_box_append(GTK_BOX(vbox2), exe_button);
     g_signal_connect_swapped(exe_button, "clicked", G_CALLBACK(&ProcessExecute), this);
 
     // add quit button
-    GtkWidget *quit_button = gtk_button_new_with_label("Quit");
+    GtkWidget* quit_button = gtk_button_new_with_label("Quit");
     gtk_box_append(GTK_BOX(vbox1), quit_button);
     g_signal_connect_swapped(quit_button, "clicked", G_CALLBACK(g_application_quit), app);
     // ウィンドウを表示
@@ -89,15 +89,15 @@ void CV_GUI::ImageChange()
     gtk_picture_set_file(image, file);
 }
 
-void CV_GUI::ImageSelect(GtkWidget *widget, gpointer data)
+void CV_GUI::ImageSelect(GtkWidget* widget, gpointer data)
 {
-    GtkFileDialog *dialog = gtk_file_dialog_new();
+    GtkFileDialog* dialog = gtk_file_dialog_new();
     gtk_file_dialog_open(dialog, NULL, NULL, (GAsyncReadyCallback)ImageSelected, data);
 }
 
-void CV_GUI::ImageSelected(GObject *dialog, GAsyncResult *res, gpointer data)
+void CV_GUI::ImageSelected(GObject* dialog, GAsyncResult* res, gpointer data)
 {
-    CV_GUI *self = static_cast<CV_GUI *>(data);
+    CV_GUI* self = static_cast<CV_GUI*>(data);
     self->file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(dialog), res, NULL);
     if (self->file) {
         self->ImageChange();
@@ -106,7 +106,7 @@ void CV_GUI::ImageSelected(GObject *dialog, GAsyncResult *res, gpointer data)
 
 void CV_GUI::ProcessChange(GtkWidget *widget, gpointer data)
 {
-    CV_GUI *self = static_cast<CV_GUI *>(data);
+    CV_GUI* self = static_cast<CV_GUI*>(data);
 
     int process_num = gtk_drop_down_get_selected(self->ddown_process);
     
@@ -133,7 +133,7 @@ void CV_GUI::ProcessChange(GtkWidget *widget, gpointer data)
 
 void CV_GUI::ProcessExecute(GtkWidget *widget, gpointer data)
 {
-    CV_GUI *self = static_cast<CV_GUI *>(data);
+    CV_GUI* self = static_cast<CV_GUI*>(data);
 
     if (self->file == nullptr) return;
 
@@ -157,16 +157,16 @@ void CV_GUI::ProcessExecute(GtkWidget *widget, gpointer data)
     int height = gdk_pixbuf_get_height(pixbuf);
     int channel = gdk_pixbuf_get_n_channels(pixbuf);
 
-    IMG *img = new IMG;
+    IMG* img = new IMG;
     img->channel = channel;
     img->width = width;
     img->height = height;
     img->pixel = width * height;
     img->value = gdk_pixbuf_get_pixels(pixbuf);
 
-    IMG_RGB *img_rgb = new IMG_RGB;
+    IMG_RGB* img_rgb = new IMG_RGB;
     AllocImgRGB(img_rgb, width, height);
-    IMG2RGB(img_rgb, img);
+    IMG2RGB(img, img_rgb);
 
     int process_num = gtk_drop_down_get_selected(self->ddown_process);
     if (process_num == 0) GrayScale(img_rgb);
@@ -225,7 +225,7 @@ void CV_GUI::ProcessExecute(GtkWidget *widget, gpointer data)
         if (argv.size() >= 2) MotionBlur(img_rgb, stoi(argv[0]), stoi(argv[1]));
     }
 
-    RGB2IMG(img, img_rgb);
+    RGB2IMG(img_rgb, img);
 
     Free(img_rgb);
     delete img;
